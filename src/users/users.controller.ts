@@ -8,26 +8,57 @@ import {
   Post,
   Query,
   NotFoundException,
-  // ClassSerializerInterceptor,
+  Session,
+  UseGuards,
 } from '@nestjs/common';
-import { Serialize } from 'src/interceptors/serilize.interceptor';
+import { Serialize } from 'src/interceptors/serialize.interceptor';
+import { CurrentUser } from './decorators/current-user.decorator';
+import { AuthService } from './auth.service';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { UserDto } from './dtos/user.dto';
 import { UsersService } from './users.service';
-
-@Serialize(UserDto) //Aplying the middleware to all routes
+import { User } from './user.entity';
+import { AuthGuard } from 'src/guards/auth.guard';
 @Controller('auth')
+@Serialize(UserDto) //Applying the middleware to all routes
 export class UsersController {
-  constructor(private usersService: UsersService) {}
+  constructor(
+    private usersService: UsersService,
+    private authService: AuthService,
+  ) {}
 
-  @Post('/signup')
-  createUser(@Body() body: CreateUserDto) {
-    this.usersService.create(body.email, body.password);
+  // @Get('/whoami')
+  // whoAmI(@Session() session: any) {
+  //   return this.usersService.findOne(session.userId);
+  // }
+  @Get('/whoami')
+  @UseGuards(AuthGuard)
+  whoAmI(@CurrentUser() user: User) {
+    return user;
   }
 
-  // @UseInterceptors(ClassSerializerInterceptor) // use an interceptor to normalize the response object whithout  excluded fields of our entity
-  // @UseInterceptors(new SerializeInterceptor(UserDto)) // Use our own interceptor (works similat to middlewares)
+  @Post('/signout')
+  signOut(@Session() session: any) {
+    session.userId = null;
+  }
+
+  @Post('/signup')
+  async createUser(@Body() body: CreateUserDto, @Session() session: any) {
+    const user = await this.authService.signUp(body.email, body.password);
+    session.userId = user.id;
+    return user;
+  }
+
+  @Post('/signin')
+  async signin(@Body() body: CreateUserDto, @Session() session: any) {
+    const user = await this.authService.signIn(body.email, body.password);
+    session.userId = user.id;
+    return user;
+  }
+
+  // @UseInterceptors(ClassSerializerInterceptor) // use an interceptor to normalize the response object without  excluded fields of our entity
+  // @UseInterceptors(new SerializeInterceptor(UserDto)) // Use our own interceptor (works similar to middleware)
   // @Serialize(UserDto) // re-factored the code to not import so many functions
   @Get('/:id')
   async findUser(@Param('id') id: string) {
