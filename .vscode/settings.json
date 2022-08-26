@@ -1,3 +1,4 @@
 {
-  "cSpell.words": ["hfqldsv", "mycv", "signin", "signnin", "signout"]
+  "cSpell.words": ["hfqldsv", "mycv", "signin", "signnin", "signout"],
+  "cSpell.ignoreWords": ["datasourceoptions"]
 }
