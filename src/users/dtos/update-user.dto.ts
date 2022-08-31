@@ -8,4 +8,7 @@ export class UpdateUserDto {
   @IsString()
   @IsOptional()
   password: string;
+
+  @IsString()
+  passwordConfirm: string;
 }

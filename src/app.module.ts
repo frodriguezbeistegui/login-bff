@@ -1,14 +1,13 @@
 import { MiddlewareConsumer, Module, ValidationPipe } from '@nestjs/common';
 import { APP_PIPE } from '@nestjs/core';
-import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { ReportsModule } from './reports/reports.module';
-import { DBOptions } from '../db.datasourceoptions';
-// import { User } from './users/user.entity';
-// import { Report } from './reports/report.entity';
+import { User } from './users/user.entity';
+import { Report } from './reports/report.entity';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const cookieSession = require('cookie-session');
 
@@ -19,16 +18,14 @@ const cookieSession = require('cookie-session');
       envFilePath: `.env.${process.env.NODE_ENV}`,
     }),
     TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
       useFactory: (config: ConfigService) => {
-        const dbOptions: TypeOrmModuleOptions = {
-          // retryAttempts: 10,
-          // retryDelay: 3000,
-          // autoLoadEntities: false
+        return {
+          type: 'sqlite',
+          database: config.get<string>('DB_NAME'),
+          synchronize: true,
+          entities: [User, Report],
         };
-
-        Object.assign(dbOptions, DBOptions);
-
-        return dbOptions;
       },
     }),
     UsersModule,
