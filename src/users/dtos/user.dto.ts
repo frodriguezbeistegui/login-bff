@@ -1,4 +1,5 @@
 import { Expose } from 'class-transformer';
+import { CurrentSession } from '../entities/currentSession.entity';
 
 export class UserDto {
   @Expose()
@@ -9,4 +10,13 @@ export class UserDto {
 
   @Expose()
   email: string;
+
+  @Expose()
+  ip: string;
+
+  @Expose()
+  provider: string;
+
+  @Expose()
+  currentSession: CurrentSession;
 }

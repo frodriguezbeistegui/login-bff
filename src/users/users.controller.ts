@@ -18,8 +18,9 @@ import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { UserDto } from './dtos/user.dto';
 import { UsersService } from './users.service';
-import { User } from './user.entity';
+import { User } from './entities/user.entity';
 import { AuthGuard } from '../guards/auth.guard';
+import { SignInUserDto } from './dtos/signin-user.dto';
 
 @Controller('auth')
 @Serialize(UserDto) //Applying the middleware to all routes
@@ -36,6 +37,9 @@ export class UsersController {
   @Get('/whoami')
   @UseGuards(AuthGuard)
   whoAmI(@CurrentUser() user: User) {
+    if (!user) {
+      return null;
+    }
     return user;
   }
 
@@ -50,13 +54,15 @@ export class UsersController {
       body.email,
       body.password,
       body.name,
+      body.ip,
+      body.provider,
     );
     session.userId = user.id;
     return user;
   }
 
   @Post('/signin')
-  async signin(@Body() body: CreateUserDto, @Session() session: any) {
+  async signin(@Body() body: SignInUserDto, @Session() session: any) {
     const user = await this.authService.signIn(body.email, body.password);
     session.userId = user.id;
     return user;

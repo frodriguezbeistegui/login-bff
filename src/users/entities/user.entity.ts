@@ -1,4 +1,5 @@
 import { Exclude } from 'class-transformer';
+import { IsOptional } from 'class-validator';
 import {
   AfterInsert,
   Entity,
@@ -6,7 +7,11 @@ import {
   PrimaryGeneratedColumn,
   AfterRemove,
   AfterUpdate,
+  OneToOne,
+  JoinTable,
+  JoinColumn,
 } from 'typeorm';
+import { CurrentSession } from './currentSession.entity';
 
 @Entity()
 export class User {
@@ -14,6 +19,7 @@ export class User {
   id: number;
 
   @Column()
+  @IsOptional()
   name: string;
 
   @Column()
@@ -25,6 +31,13 @@ export class User {
 
   @Column({ default: true })
   admin: boolean;
+
+  @OneToOne((type) => CurrentSession, (currentSession) => currentSession.user, {
+    cascade: true,
+    nullable: false,
+    eager: true,
+  })
+  currentSession: CurrentSession;
 
   @AfterInsert()
   logInsert() {
