@@ -1,4 +1,3 @@
-import { Expose } from 'class-transformer';
 import { IsEmail, IsIP, IsString } from 'class-validator';
 
 export class SignInUserDto {
@@ -7,6 +6,7 @@ export class SignInUserDto {
 
   @IsString()
   password: string;
+
   @IsIP()
   ip: string;
 

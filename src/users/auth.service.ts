@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  Body,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -35,19 +34,24 @@ export class AuthService {
     //join the hash and the salt together
     const result = salt + '.' + hash.toString('hex');
 
+    //Create a newSession
+    const newSession = await this.usersService.sessionCall({
+      body: { ip, provider },
+      action: 'create',
+    });
+
     // create a new user and save it
     const user = await this.usersService.create(
       email,
       result,
       name,
-      ip,
-      provider,
+      newSession,
     );
     // return the user
     return user;
   }
 
-  async signIn(email: string, password: string) {
+  async signIn(email: string, password: string, ip: string, provider: string) {
     const [user] = await this.usersService.find(email);
     if (!user) {
       throw new NotFoundException('User not found');
@@ -59,6 +63,15 @@ export class AuthService {
     if (storedHash !== hash.toString('hex')) {
       throw new BadRequestException('Wrong password');
     }
+
+    // Update user session
+    console.log(user.currentSession._id);
+
+    this.usersService.sessionCall({
+      _id: user.currentSession._id,
+      action: 'findOneAndUpdate',
+      body: { provider, ip },
+    });
     return user;
   }
 }

@@ -12,9 +12,27 @@ import {
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: User.name, schema: UserSchema },
-      { name: CurrentSession.name, schema: CurrentSessionSchema },
+    MongooseModule.forFeatureAsync([
+      {
+        name: User.name,
+        useFactory: () => {
+          const schema = UserSchema;
+          // schema.pre<User>('save', async function () {
+          //   this.populate({
+          //     path: 'currentSession',
+          //     select: '-_id',
+          //   });
+          // });
+          return schema;
+        },
+      },
+      {
+        name: CurrentSession.name,
+        useFactory: () => {
+          const schema = CurrentSessionSchema;
+          return schema;
+        },
+      },
     ]),
   ],
   controllers: [UsersController],

@@ -1,8 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Body, Injectable, NotFoundException } from '@nestjs/common';
 import { User } from './models/user.entity';
 import { CurrentSession } from './models/currentSession.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { Action } from 'rxjs/internal/scheduler/Action';
 @Injectable()
 export class UsersService {
   constructor(
@@ -14,11 +15,9 @@ export class UsersService {
     email: string,
     password: string,
     name: string,
-    ip: string,
-    provider: string,
+    currentSession: CurrentSession,
   ) {
-    const currentSession = await this.createCurrentSession(ip, provider);
-    // console.log(currentSession);
+    console.log(currentSession);
     const user = this.userRepo.create({
       email,
       password,
@@ -26,9 +25,43 @@ export class UsersService {
       currentSession,
     });
 
-    console.log(user);
     return user;
   }
+
+  // async createCurrentSession(ip: string, provider: string) {
+  //   const newSession = await this.sessionRepo.create({
+  //     ip,
+  //     provider,
+  //     creationDate: Date.now(),
+  //     expirationDate: Date.now() + 1000 * 60 * 60,
+  //   });
+  //   return newSession;
+  // }
+
+  async sessionCall({ body, action, _id = undefined }) {
+    body = action == ('create' || 'findOneAndUpdate') && {
+      ...body,
+      creationDate: Date.now(),
+      expirationDate: Date.now() + 1000 * 60 * 60,
+    };
+
+    if (_id) {
+      return await this.sessionRepo.findOneAndUpdate({ _id }, body);
+      // return await this.sessionRepo[action](id, body);
+    }
+
+    return await this.sessionRepo[action](body);
+  }
+
+  // async updateSession(id, ip, provider, _id) {
+  //   const newSession = await this.sessionRepo.findByIdAndUpdate(_id, {
+  //     ip,
+  //     provider,
+  //     creationDate: Date.now(),
+  //     expirationDate: Date.now() + 1000 * 60 * 60,
+  //   });
+  //   return newSession;
+  // }
 
   findOne(id: number) {
     if (!id) {
@@ -38,7 +71,8 @@ export class UsersService {
   }
 
   find(email: string) {
-    return this.userRepo.find({ email });
+    if (email) return this.userRepo.find({ email });
+    return this.userRepo.find().populate('currentSession').exec();
   }
 
   async update(id: number, attrs: Partial<User>) {
@@ -54,12 +88,5 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
     return this.userRepo.remove(user);
-  }
-
-  createCurrentSession(ip: string, provider: string) {
-    return this.sessionRepo.create({
-      ip,
-      provider,
-    });
   }
 }

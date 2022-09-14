@@ -4,14 +4,17 @@ import { Document } from 'mongoose';
 export type CurrentSessionDocument = CurrentSession & Document;
 
 @Schema({ toJSON: { virtuals: true }, toObject: { virtuals: true }, _id: true })
-export class CurrentSession {
-  @Prop({ default: Date.now() })
+export class CurrentSession extends Document {
+  @Prop({ select: true, required: true })
   creationDate: Date;
-  @Prop({ default: Date.now() + 120000 })
+
+  @Prop({ select: true, required: true })
   expirationDate: Date;
-  @Prop()
+
+  @Prop({ select: true, required: true })
   ip: string;
-  @Prop()
+
+  @Prop({ select: true, required: true })
   provider: string;
 }
 
