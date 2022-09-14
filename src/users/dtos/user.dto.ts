@@ -1,9 +1,10 @@
-import { Expose } from 'class-transformer';
-import { CurrentSession } from '../entities/currentSession.entity';
+import { Expose, Transform } from 'class-transformer';
+// import { CurrentSession } from '../models/currentSession.entity';
 
 export class UserDto {
   @Expose()
-  id: number;
+  @Transform(({ obj }) => obj._id.toString())
+  _id: string;
 
   @Expose()
   name: string;
@@ -17,6 +18,9 @@ export class UserDto {
   @Expose()
   provider: string;
 
+  // @Expose()
+  // currentSession: CurrentSession;
+
   @Expose()
-  currentSession: CurrentSession;
+  id: string;
 }

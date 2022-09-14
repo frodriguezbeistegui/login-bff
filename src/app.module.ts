@@ -1,12 +1,10 @@
 import { MiddlewareConsumer, Module, ValidationPipe } from '@nestjs/common';
 import { APP_PIPE } from '@nestjs/core';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
-import { User } from './users/entities/user.entity';
-import { CurrentSession } from './users/entities/currentSession.entity';
+import { MongooseModule } from '@nestjs/mongoose';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const cookieSession = require('cookie-session');
 
@@ -16,17 +14,9 @@ const cookieSession = require('cookie-session');
       isGlobal: true,
       envFilePath: `.env.${process.env.NODE_ENV}`,
     }),
-    TypeOrmModule.forRootAsync({
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => {
-        return {
-          type: 'sqlite',
-          database: config.get<string>('DB_NAME'),
-          synchronize: true,
-          entities: [User, CurrentSession],
-        };
-      },
-    }),
+    MongooseModule.forRoot(
+      `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@${process.env.DB_CONFIG}`,
+    ),
     UsersModule,
   ],
   controllers: [AppController],

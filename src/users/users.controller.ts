@@ -18,7 +18,7 @@ import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { UserDto } from './dtos/user.dto';
 import { UsersService } from './users.service';
-import { User } from './entities/user.entity';
+import { User } from './models/user.entity';
 import { AuthGuard } from '../guards/auth.guard';
 import { SignInUserDto } from './dtos/signin-user.dto';
 
