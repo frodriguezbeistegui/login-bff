@@ -10,6 +10,7 @@ import {
   NotFoundException,
   Session,
   UseGuards,
+  Put,
 } from '@nestjs/common';
 import { Serialize } from '../interceptors/serialize.interceptor';
 import { CurrentUser } from './decorators/current-user.decorator';
@@ -40,36 +41,39 @@ export class UsersController {
     if (!user) {
       return null;
     }
+
     return user;
   }
 
   @Post('/signout')
   signOut(@Session() session: any) {
-    session.userId = null;
+    session.current = null;
   }
 
   @Post('/signup')
-  async createUser(@Body() body: CreateUserDto, @Session() session: any) {
+  async createUser(
+    @Body() { email, password, name, ip, provider }: CreateUserDto,
+    @Session() session: any,
+  ) {
     const user = await this.authService.signUp(
-      body.email,
-      body.password,
-      body.name,
-      body.ip,
-      body.provider,
+      email,
+      password,
+      name,
+      ip,
+      provider,
     );
-    session.userId = user.id;
+    session.current = { id: user.id, currentSession: user.currentSession };
     return user;
   }
 
-  @Post('/signin')
-  async signin(@Body() body: SignInUserDto, @Session() session: any) {
-    const user = await this.authService.signIn(
-      body.email,
-      body.password,
-      body.ip,
-      body.provider,
-    );
-    session.userId = user.id;
+  @Put('/signin')
+  async signin(
+    @Body() { email, password, ip, provider }: SignInUserDto,
+    @Session() session: any,
+  ) {
+    const user = await this.authService.signIn(email, password, ip, provider);
+    console.log(user.currentSession);
+    session.current = { id: user.id, currentSession: user.currentSession };
     return user;
   }
 

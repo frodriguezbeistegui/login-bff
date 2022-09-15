@@ -64,14 +64,13 @@ export class AuthService {
       throw new BadRequestException('Wrong password');
     }
 
-    // Update user session
-    console.log(user.currentSession._id);
-
-    this.usersService.sessionCall({
+    // Update user session and adding it to user's object
+    user.currentSession = await this.usersService.sessionCall({
       _id: user.currentSession._id,
       action: 'findOneAndUpdate',
       body: { provider, ip },
     });
+
     return user;
   }
 }
