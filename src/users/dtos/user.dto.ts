@@ -1,4 +1,4 @@
-import { Exclude, Expose, Transform } from 'class-transformer';
+import { Expose, Transform } from 'class-transformer';
 import { CurrentSession } from '../models/currentSession.entity';
 
 export class UserDto {
@@ -22,6 +22,6 @@ export class UserDto {
   @Transform(({ obj }) => obj.currentSession)
   currentSession: CurrentSession;
 
-  @Exclude()
+  @Expose()
   id: string;
 }

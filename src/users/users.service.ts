@@ -16,7 +16,7 @@ export class UsersService {
     name: string,
     currentSession: CurrentSession,
   ) {
-    console.log(currentSession);
+    // creates the user in the db with a new currentSession
     const user = this.userRepo.create({
       email,
       password,
@@ -35,15 +35,15 @@ export class UsersService {
       expirationDate: Date.now() + 1000 * 60 * 60,
     };
 
-    //  if "_id" is defined will trigger for the actions that need it
+    //  route A) methods with id
     if (_id) {
       return await this.sessionRepo[action]({ _id }, body);
     }
-    // "id" not defined so 
+    // route B) methods without id
     return await this.sessionRepo[action](body);
   }
 
-  findOne(id: number) {
+  findOne(id: string) {
     if (!id) {
       throw new NotFoundException('not user found');
     }
@@ -55,14 +55,14 @@ export class UsersService {
     return this.userRepo.find().populate('currentSession').exec();
   }
 
-  async update(id: number, attrs: Partial<User>) {
+  async update(id: string, attrs: Partial<User>) {
     const user = await this.userRepo.findByIdAndUpdate(id, attrs);
     if (!user) {
       throw new NotFoundException('user not found');
     }
   }
 
-  async remove(id: number) {
+  async remove(id: string) {
     const user = await this.findOne(id);
     if (!user) {
       throw new NotFoundException('User not found');

@@ -52,14 +52,15 @@ export class AuthService {
   }
 
   async signIn(email: string, password: string, ip: string, provider: string) {
+    // extracts the user from all users with the same email (should only be 1)
     const [user] = await this.usersService.find(email);
     if (!user) {
       throw new NotFoundException('User not found');
     }
+
+    // hashing algorithm and compare entered pass with db pass
     const [salt, storedHash] = user.password.split('.');
-
     const hash = (await scrypt(password, salt, 32)) as Buffer;
-
     if (storedHash !== hash.toString('hex')) {
       throw new BadRequestException('Wrong password');
     }
@@ -71,6 +72,7 @@ export class AuthService {
       body: { provider, ip },
     });
 
+    // return user found with given email
     return user;
   }
 }

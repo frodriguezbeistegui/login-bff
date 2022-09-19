@@ -4,7 +4,6 @@ import {
   Delete,
   Get,
   Param,
-  Patch,
   Post,
   Query,
   NotFoundException,
@@ -31,22 +30,19 @@ export class UsersController {
     private authService: AuthService,
   ) {}
 
-  // @Get('/whoami')
-  // whoAmI(@Session() session: any) {
-  //   return this.usersService.findOne(session.userId);
-  // }
   @Get('/whoami')
   @UseGuards(AuthGuard)
   whoAmI(@CurrentUser() user: User) {
+    // when user do have a valid session cookie gets the info from there using AuthGuard
     if (!user) {
-      return null;
+      throw new NotFoundException('User not found');
     }
-
     return user;
   }
 
   @Post('/signout')
   signOut(@Session() session: any) {
+    // set the auth cookie (session) to null
     session.current = null;
   }
 
@@ -55,6 +51,7 @@ export class UsersController {
     @Body() { email, password, name, ip, provider }: CreateUserDto,
     @Session() session: any,
   ) {
+    // Creates an user and a currentSession for it
     const user = await this.authService.signUp(
       email,
       password,
@@ -62,7 +59,9 @@ export class UsersController {
       ip,
       provider,
     );
+    // Updates the auth cookie with current user and session
     session.current = { id: user.id, currentSession: user.currentSession };
+
     return user;
   }
 
@@ -71,18 +70,17 @@ export class UsersController {
     @Body() { email, password, ip, provider }: SignInUserDto,
     @Session() session: any,
   ) {
+    // Check user credentials and return user with a new currentSession
     const user = await this.authService.signIn(email, password, ip, provider);
-    console.log(user.currentSession);
+    // updates auth cookie
     session.current = { id: user.id, currentSession: user.currentSession };
+
     return user;
   }
 
-  // @UseInterceptors(ClassSerializerInterceptor) // use an interceptor to normalize the response object without  excluded fields of our entity
-  // @UseInterceptors(new SerializeInterceptor(UserDto)) // Use our own interceptor (works similar to middleware)
-  // @Serialize(UserDto) // re-factored the code to not import so many functions
   @Get('/:id')
   async findUser(@Param('id') id: string) {
-    const user = await this.usersService.findOne(+id);
+    const user = await this.usersService.findOne(id);
     if (!user) {
       throw new NotFoundException(`Not user found with an id of ${id}`);
     }
@@ -96,11 +94,10 @@ export class UsersController {
 
   @Delete('/:id')
   removeUser(@Param('id') id: string) {
-    return this.usersService.remove(parseInt(id));
+    return this.usersService.remove(id);
   }
 
-  @Patch('/:id')
   updateUser(@Param('id') id: string, @Body() body: UpdateUserDto) {
-    return this.usersService.update(+id, body);
+    return this.usersService.update(id, body);
   }
 }
